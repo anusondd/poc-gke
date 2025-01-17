@@ -1,0 +1,125 @@
+{{- if eq .Values.app.kind "deployment" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  {{- include "labels.metadata" $ }}
+spec:
+  replicas: {{ .Values.app.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "labels" $ | indent 3 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        {{- include "labels" $ | indent 5 }}
+      {{- if .Values.configMapData }}
+      annotations:
+        configmap-checksum: {{ toJson .Values.configMapData | sha256sum }}
+      {{- end }}
+    spec:
+      imagePullSecrets:
+      - name: {{ .Values.image.imagePullSecrets }}
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.app.port }}
+          {{- if .Values.livenessProbe.enable }}
+          {{- if .Values.livenessProbe.path }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path }}
+              port: {{ .Values.app.port }}
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            initialDelaySeconds: 30
+          {{- else }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.app.port }}
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+          {{- end }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enable }}
+          {{- if .Values.readinessProbe.path }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.app.port }}
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            initialDelaySeconds: 3
+          {{- else }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.app.port }}
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+          {{- end }}
+          {{- end }}
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+          {{- if or .Values.secret.enable .Values.pvc.enable }}
+          volumeMounts:
+          {{- if .Values.secret.enable }}
+            - name: {{ .Release.Name }}
+              mountPath: /etc/secret-volume
+              readOnly: true
+          {{- end }}
+          {{- if .Values.pvc.enable }}
+          {{- range .Values.pvc.items }}
+            - name: {{ .name }}
+              mountPath: {{ .path }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- if or .Values.envFrom .Values.configMapData }}
+          envFrom:
+          {{- if .Values.configMapData }}
+          - configMapRef:
+              name: {{ $.Release.Name }}
+              optional: true
+          {{- end }}
+          {{- if .Values.envFrom }}
+          {{- range .Values.envFrom }}
+          - configMapRef:
+              name: {{ . }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+      {{- if or .Values.secret.enable .Values.pvc.enable }}
+      volumes:
+        {{- if .Values.secret.enable }}
+        - name: {{ .Release.Name }}
+          secret:
+            secretName: {{ .Release.Name }}
+        {{- end }}
+        {{- if .Values.pvc.enable }}
+        {{- range .Values.pvc.items }}
+        - name: {{ .name }}
+          {{- if .storageClassName }}
+          persistentVolumeClaim:
+            claimName: {{ .name }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+{{- end }}

@@ -1,0 +1,74 @@
+{{- if eq .Values.app.kind "deploymentconfig" }}
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  {{- include "labels.metadata" $ }}
+spec:
+  replicas: {{ .Values.app.replicas | default 1 }}
+  selector:
+    {{- include "labels" $ | indent 3 }}
+  strategy:
+    type: Rolling
+    resources:
+      limits:
+        cpu: {{ .Values.resources.limits.cpu }}
+        memory: {{ .Values.resources.limits.memory }}
+      requests:
+        cpu: {{ .Values.resources.requests.cpu }}
+        memory: {{ .Values.resources.requests.memory }}
+    activeDeadlineSeconds: 21600
+  template:
+    metadata:
+      labels:
+        {{- include "labels" $ | indent 5 }}
+      annotations:
+        configmap-checksum: {{ toJson  .Values.configMapData | sha256sum }}
+    spec:
+      imagePullSecrets: 
+      - name: {{ .Values.image.imagePullSecrets }}
+      {{- if .Values.volumes }}
+      volumes:                      # Existing Volume for Common
+      {{- range .Values.volumes }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .configMap }}
+            defaultMode: 420
+      {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.app.port }}
+          {{- if eq .Values.livenessProbe.enable "true" }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path }}
+              port: {{ .Values.app.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          {{- end }}
+          {{- if eq .Values.readinessProbe.enable "true" }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.app.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          {{- end }}
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+          {{- if .Values.envFrom }}
+          {{- range .Values.envFrom }}
+          envFrom: 
+          - configMapRef:
+              name: {{ .name }}
+          {{- end }}
+          {{- end }}
+{{- end }}

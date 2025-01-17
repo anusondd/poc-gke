@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: develop-template-golang-v1-service
+  namespace: devsecops
+spec:
+  project: default
+  syncPolicy: {}
+  destination:
+    namespace: template
+    server: https://kubernetes.default.svc
+  source:
+    repoURL: https://gitlab.demo.appwork.com/devsecops/template-golang-v1-service-deployment.git
+    path: .
+    targetRevision: develop

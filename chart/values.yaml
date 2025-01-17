@@ -1,0 +1,60 @@
+app:
+  namespace: "template" ## project in ocp
+  replicas: 1 ## number replica 
+  port: "8080" ## port application
+  kind: deployment ## deploymant or deploymentconfig
+image:
+  repository: 'harbor.demo.appwork.com/template/golang-v1-service'
+  tag: '1.0.0' ## version tag image 
+  imagePullSecrets: secret-registry ## config secret for pull image 
+livenessProbe:
+  enable: true ## true or false
+  ## if enable true please config help check part
+  path: /
+readinessProbe:
+  enable: true ## true or false
+  ## if enable true please config help check part
+  path: /
+resources:
+  limits:
+    cpu: 200m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+## config service
+service:
+  name: develop-template-golang-v1-service
+  type: ClusterIP # ClusterIP /NodePort
+  internalTrafficPolicy: Cluster
+  #nodeport: 30300
+## config ingress
+ingress:
+  name: develop-template-golang-v1-service
+  host: develop-template-golang-v1-service.demo.appwork.com
+  path: /
+  tls:
+    enable: true
+    secretName: 'appwork-cert-tls'
+## configmap
+### external configmap (optionnal)
+envFrom:
+# - cicd-demo-common-config
+# - common-config
+### environment in configmap key:values
+configMapData:
+  BASE_PATH: "/home/TMAP/APP_NAME"
+  SMTP_MAIL_TEMPLATE_PATH: "/home/TMAP/APP_NAME"
+secret:
+  enable: true ## "true" or "false" 
+  file: "secret/example.yaml"
+pvc:
+  enable: false ## true or false
+  items:
+    - name: pvc-example-dev-01
+      accessMode: ReadWriteOnce
+      storage: 10Gi
+      path: /home/TMAP/APP_NAME/shared
+      volumeName: pv-example-dev ## Get from PV Name
+      storageClassName: local-storage ## Get from StorageClassName in PV
+      volumeMode: Filesystem
