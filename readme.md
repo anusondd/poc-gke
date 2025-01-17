@@ -1,7 +1,7 @@
 terraform init
 terraform plan
-terraform apply
-terraform destroy
+terraform apply -auto-approve
+terraform destroy -auto-approve
 
 
-gcloud storage buckets create poc-gke-448016-terraform-state --location=asia-southeast1
+gcloud container clusters get-credentials poc-gke
