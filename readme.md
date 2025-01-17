@@ -109,28 +109,28 @@ helm delete gitlab -n devsecops
 
 1. Create a Dockerfile for a given application
 Expected Output: Dockerfile
-// Answer : In Dockerfile
+``` Answer : In Dockerfile ```
 
 2. Build the image using the Dockerfile and push to Docker Hub
 Expected Output: Build and push command and Docker Hub url
-// Answer : In build-go-12.Jenkinsfile, deployment-chart.Jenkinsfile, deployment-workflow.Jenkinsfile
+``` Answer : In build-go-12.Jenkinsfile, deployment-chart.Jenkinsfile, deployment-workflow.Jenkinsfile ```
 
 3. Create a Kustomize manifest to deploy the image from the previous step. The Kustomize should have flexibility to allow Developer to adjust values without having to rebuild the Kustomize frequently
 Expected Output: Kustomize manifest file to deploy the application
-// Answer : In directory chart
+``` Answer : In directory chart ```
 
 4. Setup GKE cluster with the related resources to run GKE like VPC, Subnets, etc. by following GKE Best Practices using any IaC tools (Terraform, OpenTufo, Pulumi) (Bonus point: use Terraform/Terragrunt)
 Expected Output: IaC code
-// Answer : In directory chart
+``` Answer : In directory chart ```
 
 5. Condition: Avoid injecting the generated GCP access keys to the application directly. 
 Expected Output: Kustomize manifest, IaC code or anything to complete this task.
-// Answer : In directory chart
+``` Answer : In directory chart ```
 
 6. Use ArgoCD to deploy this application. To follow GitOps practices, we prefer to have an ArgoCD application defined declaratively in a YAML file if possible.
 Expected output: Yaml files and instruction how to deploy the application or command line
-// Answer : In build-go-12.Jenkinsfile, deployment-chart.Jenkinsfile, deployment-workflow.Jenkinsfile
+``` Answer : In build-go-12.Jenkinsfile, deployment-chart.Jenkinsfile, deployment-workflow.Jenkinsfile ```
 
 7. Create CICD workflow using GitOps pipeline to build and deploy application 
 Expected output: GitOps pipeline (Github, Gitlab, Bitbucket, Jenkins) workflow or diagram
-// Answer : In directory chart, workflow.png
+``` Answer : In directory chart, workflow.png ```
