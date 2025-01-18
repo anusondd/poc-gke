@@ -121,7 +121,7 @@ Expected Output: Kustomize manifest file to deploy the application
 
 4. Setup GKE cluster with the related resources to run GKE like VPC, Subnets, etc. by following GKE Best Practices using any IaC tools (Terraform, OpenTufo, Pulumi) (Bonus point: use Terraform/Terragrunt)
 Expected Output: IaC code
-``` Answer : In directory chart ```
+``` Answer : In directory vpc,gke ```
 
 5. Condition: Avoid injecting the generated GCP access keys to the application directly. 
 Expected Output: Kustomize manifest, IaC code or anything to complete this task.
